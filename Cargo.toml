@@ -2,6 +2,10 @@
 name = "netdox-plugin-rs"
 version = "0.1.0"
 edition = "2021"
+description = "Collection of functions that are useful when writing a netdox plugin in Rust."
+authors = ["Linus Kirkwood <linuskirkwood@gmail.com>"]
+license = "LGPL-3.0-only"
+readme = "README.md"
 
 [dependencies]
 redis = { version = "0.27.6", features = ["aio", "async-std-comp"] }
