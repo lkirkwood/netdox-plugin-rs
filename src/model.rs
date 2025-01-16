@@ -2,8 +2,25 @@ use std::collections::{HashMap, HashSet};
 
 use async_trait::async_trait;
 use redis::{Cmd, ToRedisArgs};
+use serde::Deserialize;
 
 use crate::error::FCallResult;
+
+// CLI
+
+#[derive(Deserialize)]
+pub struct RedisArgs {
+    /// Hostname of the redis server to use.
+    pub host: String,
+    /// Port of the redis server to use.
+    pub port: usize,
+    /// Logical database in the redis instance to use.
+    pub db: usize,
+    /// Username to use when authenticating with redis - if any.
+    pub username: Option<String>,
+    /// Password to use when authenticating with redis - if any.
+    pub password: Option<String>,
+}
 
 // Data
 

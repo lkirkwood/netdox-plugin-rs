@@ -11,3 +11,4 @@ readme = "README.md"
 redis = { version = "0.27.6", features = ["aio", "async-std-comp"] }
 async-trait = "0.1.85"
 thiserror = "2.0.9"
+serde = { version = "1.0.217", features = ["derive"] }
