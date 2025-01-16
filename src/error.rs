@@ -9,6 +9,8 @@ pub enum FCallError {
     },
     #[error("function call failed on redis: {0}")]
     Redis(#[from] redis::RedisError),
+    #[error("there is a logical error in the code: {0}")]
+    Logic(&'static str),
 }
 
 pub type FCallResult<T> = Result<T, FCallError>;
