@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use async_trait::async_trait;
 use redis::{Cmd, ToRedisArgs};
@@ -84,7 +84,27 @@ impl ToRedisArgs for StringContentType {
     }
 }
 
+pub struct Node {
+    pub name: String,
+    pub link_id: String,
+    pub alt_names: HashSet<String>,
+    pub dns_names: HashSet<String>,
+    pub raw_ids: HashSet<String>,
+    pub plugins: HashSet<String>,
+}
+
 // Behaviour
+
+#[async_trait]
+pub trait NetdoxReader {
+    async fn get_default_network(&mut self) -> FCallResult<String>;
+    async fn qualify_dns_names(&mut self, names: Vec<String>) -> FCallResult<Vec<String>>;
+    async fn get_dns_names(&mut self) -> FCallResult<HashSet<String>>;
+    async fn get_nodes(&mut self) -> FCallResult<Vec<Node>>;
+    async fn get_node(&mut self, link_id: &str) -> FCallResult<Node>;
+    async fn get_dns_metadata(&mut self, name: &str) -> FCallResult<HashMap<String, String>>;
+    async fn get_node_metadata(&mut self, node: &Node) -> FCallResult<HashMap<String, String>>;
+}
 
 #[async_trait]
 pub trait NetdoxWriter {
