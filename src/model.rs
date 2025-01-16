@@ -22,6 +22,22 @@ pub struct RedisArgs {
     pub password: Option<String>,
 }
 
+impl RedisArgs {
+    pub fn to_client(self) -> FCallResult<redis::Client> {
+        let client =
+            redis::Client::open(format!("redis://{}:{}/{}", self.host, self.port, self.db))?;
+
+        if let Some(username) = self.username {
+            redis::cmd("AUTH")
+                .arg(username)
+                .arg(self.password.unwrap())
+                .exec(&mut client.get_connection()?)?;
+        }
+
+        Ok(client)
+    }
+}
+
 // Data
 
 pub enum PluginData<'a> {
