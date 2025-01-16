@@ -8,7 +8,7 @@ use crate::error::FCallResult;
 
 // CLI
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct RedisArgs {
     /// Hostname of the redis server to use.
     pub host: String,
