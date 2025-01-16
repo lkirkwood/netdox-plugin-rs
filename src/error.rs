@@ -9,7 +9,7 @@ pub enum FCallError {
     },
     #[error("function call failed on redis: {0}")]
     Redis(#[from] redis::RedisError),
-    #[error("there is a logical error in the code: {0}")]
+    #[error("a logical error was encountered: {0}")]
     Logic(&'static str),
 }
 
