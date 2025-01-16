@@ -23,13 +23,14 @@ const CREATE_PROC_NODE_METADATA_FN: &str = "netdox_create_proc_node_metadata";
 impl NetdoxWriter for redis::aio::MultiplexedConnection {
     // DNS
 
+    /// Put a DNS record or name into the database.
     async fn put_dns(
         &mut self,
         plugin: &str,
         name: &str,
         rtype: Option<&str>,
         value: Option<&str>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_DNS_FN).arg(1).arg(name).arg(plugin);
 
@@ -43,13 +44,14 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
         }
     }
 
+    /// Attach plugin data to a DNS name.
     async fn put_dns_plugin_data(
         &mut self,
         plugin: &str,
         name: &str,
         pdata_id: &str,
         data: PluginData<'async_trait>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_DNS_PDATA_FN)
             .arg(1)
@@ -62,12 +64,13 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
         Ok(cmd.exec_async(self).await?)
     }
 
+    /// Attach metadata to a DNS name.
     async fn put_dns_metadata(
         &mut self,
         plugin: &str,
         name: &str,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_DNS_METADATA_FN).arg(1).arg(name).arg(plugin);
 
@@ -80,6 +83,7 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
 
     // Nodes
 
+    /// Put a node into the database.
     async fn put_node(
         &mut self,
         plugin: &str,
@@ -87,7 +91,7 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
         dns_names: Vec<&str>,
         exclusive: bool,
         link_id: Option<&str>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_NODE_FN).arg(dns_names.len());
 
@@ -104,13 +108,14 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
         Ok(cmd.exec_async(self).await?)
     }
 
+    /// Attach plugin data to a node.
     async fn put_node_plugin_data(
         &mut self,
         plugin: &str,
         dns_names: Vec<&str>,
         pdata_id: &str,
         data: PluginData<'async_trait>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_NODE_PDATA_FN).arg(dns_names.len());
 
@@ -125,13 +130,14 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
         Ok(cmd.exec_async(self).await?)
     }
 
+    /// Attach plugin data to a processed node.
     async fn put_proc_node_plugin_data(
         &mut self,
         plugin: &str,
         link_id: &str,
         pdata_id: &str,
         data: PluginData<'async_trait>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_PROC_NODE_PDATA_FN)
             .arg(1)
@@ -144,12 +150,13 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
         Ok(cmd.exec_async(self).await?)
     }
 
+    /// Attach metadata to a node.
     async fn put_node_metadata(
         &mut self,
         plugin: &str,
         dns_names: Vec<&str>,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_NODE_METADATA_FN).arg(dns_names.len());
         for name in dns_names {
@@ -164,12 +171,13 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
         Ok(cmd.exec_async(self).await?)
     }
 
+    /// Attach metadata to a processed node.
     async fn put_proc_node_metadata(
         &mut self,
         plugin: &str,
         link_id: &str,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_PROC_NODE_METADATA_FN)
             .arg(1)
@@ -185,13 +193,14 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
 
     // Reports
 
+    /// Put a report into the database.
     async fn put_report(
         &mut self,
         plugin: &str,
         report_id: &str,
         title: &str,
         length: usize,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
 
         cmd.arg(CREATE_REPORT_FN)
@@ -204,13 +213,14 @@ impl NetdoxWriter for redis::aio::MultiplexedConnection {
         Ok(cmd.exec_async(self).await?)
     }
 
+    /// Append data to a report.
     async fn put_report_data(
         &mut self,
         plugin: &str,
         report_id: &str,
         index: usize,
         data: PluginData<'async_trait>,
-    ) -> FCallResult {
+    ) -> FCallResult<()> {
         let mut cmd = redis::cmd("FCALL");
         cmd.arg(CREATE_REPORT_DATA_FN)
             .arg(1)

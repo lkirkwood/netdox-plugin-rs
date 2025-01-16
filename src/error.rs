@@ -11,4 +11,4 @@ pub enum FCallError {
     Redis(#[from] redis::RedisError),
 }
 
-pub type FCallResult = Result<(), FCallError>;
+pub type FCallResult<T> = Result<T, FCallError>;

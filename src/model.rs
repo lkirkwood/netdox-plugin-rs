@@ -94,7 +94,7 @@ pub trait NetdoxWriter {
         name: &str,
         rtype: Option<&str>,
         value: Option<&str>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_dns_plugin_data(
         &mut self,
@@ -102,14 +102,14 @@ pub trait NetdoxWriter {
         name: &str,
         pdata_id: &str,
         data: PluginData<'async_trait>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_dns_metadata(
         &mut self,
         plugin: &str,
         name: &str,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_node(
         &mut self,
@@ -118,7 +118,7 @@ pub trait NetdoxWriter {
         dns_names: Vec<&str>,
         exclusive: bool,
         link_id: Option<&str>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_node_plugin_data(
         &mut self,
@@ -126,7 +126,7 @@ pub trait NetdoxWriter {
         dns_names: Vec<&str>,
         pdata_id: &str,
         data: PluginData<'async_trait>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_proc_node_plugin_data(
         &mut self,
@@ -134,21 +134,21 @@ pub trait NetdoxWriter {
         link_id: &str,
         pdata_id: &str,
         data: PluginData<'async_trait>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_node_metadata(
         &mut self,
         plugin: &str,
         dns_names: Vec<&str>,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_proc_node_metadata(
         &mut self,
         plugin: &str,
         link_id: &str,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_report(
         &mut self,
@@ -156,7 +156,7 @@ pub trait NetdoxWriter {
         report_id: &str,
         title: &str,
         length: usize,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 
     async fn put_report_data(
         &mut self,
@@ -164,5 +164,5 @@ pub trait NetdoxWriter {
         report_id: &str,
         index: usize,
         data: PluginData<'async_trait>,
-    ) -> FCallResult;
+    ) -> FCallResult<()>;
 }
