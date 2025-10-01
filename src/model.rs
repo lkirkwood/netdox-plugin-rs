@@ -1,6 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    future::Future,
+};
 
-use async_trait::async_trait;
 use redis::{Cmd, ToRedisArgs};
 use serde::Deserialize;
 
@@ -8,6 +10,7 @@ use crate::error::FCallResult;
 
 // CLI
 
+/// Struct for modeling the redis connection details argument each plugin receives.
 #[derive(Debug, Deserialize)]
 pub struct RedisArgs {
     /// Hostname of the redis server to use.
@@ -23,6 +26,7 @@ pub struct RedisArgs {
 }
 
 impl RedisArgs {
+    /// Return a redis client object using these connection  details.
     pub fn to_client(self) -> FCallResult<redis::Client> {
         let client =
             redis::Client::open(format!("redis://{}:{}/{}", self.host, self.port, self.db))?;
@@ -40,6 +44,7 @@ impl RedisArgs {
 
 // Data
 
+/// Models a datum that can be attached to an object.
 pub enum PluginData<'a> {
     Hash {
         title: &'a str,
@@ -98,6 +103,7 @@ impl<'a> PluginData<'a> {
     }
 }
 
+/// The different content types a string datum can be tagged as.
 pub enum StringContentType {
     HTML,
     Markdown,
@@ -117,6 +123,7 @@ impl ToRedisArgs for StringContentType {
     }
 }
 
+/// Models a node.
 pub struct Node {
     pub name: String,
     pub link_id: String,
@@ -128,94 +135,120 @@ pub struct Node {
 
 // Behaviour
 
-#[async_trait]
+/// Defines the read API.
 pub trait NetdoxReader {
-    async fn get_default_network(&mut self) -> FCallResult<String>;
-    async fn qualify_dns_names(&mut self, names: Vec<String>) -> FCallResult<Vec<String>>;
-    async fn get_dns_names(&mut self) -> FCallResult<HashSet<String>>;
-    async fn get_nodes(&mut self) -> FCallResult<Vec<Node>>;
-    async fn get_node(&mut self, link_id: &str) -> FCallResult<Node>;
-    async fn get_dns_metadata(&mut self, name: &str) -> FCallResult<HashMap<String, String>>;
-    async fn get_node_metadata(&mut self, node: &Node) -> FCallResult<HashMap<String, String>>;
+    /// Fetch the default network namespace.
+    fn get_default_network(&mut self) -> impl Future<Output = FCallResult<String>> + Send;
+    /// Prepend the default network qualifier to a list of DNS names.
+    fn qualify_dns_names(
+        &mut self,
+        names: Vec<String>,
+    ) -> impl Future<Output = FCallResult<Vec<String>>> + Send;
+    /// Fetch all the DNS names from the datastore.
+    fn get_dns_names(&mut self) -> impl Future<Output = FCallResult<HashSet<String>>> + Send;
+    /// Fetch all the nodes from the datastore.
+    fn get_nodes(&mut self) -> impl Future<Output = FCallResult<Vec<Node>>> + Send;
+    /// Fetch a processed node using its link ID.
+    fn get_node(&mut self, link_id: &str) -> impl Future<Output = FCallResult<Node>> + Send;
+    /// Fetch the metadata for a DNS name.
+    fn get_dns_metadata(
+        &mut self,
+        name: &str,
+    ) -> impl Future<Output = FCallResult<HashMap<String, String>>> + Send;
+    /// Fetch the metadata for a node.
+    fn get_node_metadata(
+        &mut self,
+        node: &Node,
+    ) -> impl Future<Output = FCallResult<HashMap<String, String>>> + Send;
 }
 
-#[async_trait]
+/// Defines the write API.
 pub trait NetdoxWriter {
-    async fn put_dns(
+    /// Create a DNS name and optionally attach a record.
+    fn put_dns(
         &mut self,
         plugin: &str,
         name: &str,
         rtype: Option<&str>,
         value: Option<&str>,
-    ) -> FCallResult<()>;
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_dns_plugin_data(
+    /// Attach plugin data to a DNS name.
+    fn put_dns_plugin_data<'a>(
         &mut self,
         plugin: &str,
         name: &str,
         pdata_id: &str,
-        data: PluginData<'async_trait>,
-    ) -> FCallResult<()>;
+        data: PluginData<'a>,
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_dns_metadata(
+    /// Attach metadata to a DNS name.
+    fn put_dns_metadata(
         &mut self,
         plugin: &str,
         name: &str,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult<()>;
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_node(
+    /// Create a node.
+    fn put_node(
         &mut self,
         plugin: &str,
         name: &str,
         dns_names: Vec<&str>,
         exclusive: bool,
         link_id: Option<&str>,
-    ) -> FCallResult<()>;
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_node_plugin_data(
+    /// Attach plugin data to a node.
+    fn put_node_plugin_data<'a>(
         &mut self,
         plugin: &str,
         dns_names: Vec<&str>,
         pdata_id: &str,
-        data: PluginData<'async_trait>,
-    ) -> FCallResult<()>;
+        data: PluginData<'a>,
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_proc_node_plugin_data(
+    /// Attach plugin data to a processed node by link ID.
+    fn put_proc_node_plugin_data<'a>(
         &mut self,
         plugin: &str,
         link_id: &str,
         pdata_id: &str,
-        data: PluginData<'async_trait>,
-    ) -> FCallResult<()>;
+        data: PluginData<'a>,
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_node_metadata(
+    /// Attach metadata to a node.
+    fn put_node_metadata(
         &mut self,
         plugin: &str,
         dns_names: Vec<&str>,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult<()>;
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_proc_node_metadata(
+    /// Attach metadata to a processed node by link ID.
+    fn put_proc_node_metadata(
         &mut self,
         plugin: &str,
         link_id: &str,
         metadata: &HashMap<&str, &str>,
-    ) -> FCallResult<()>;
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_report(
+    /// Create a report.
+    fn put_report(
         &mut self,
         plugin: &str,
         report_id: &str,
         title: &str,
         length: usize,
-    ) -> FCallResult<()>;
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 
-    async fn put_report_data(
+    /// Attach data to a report.
+    fn put_report_data<'a>(
         &mut self,
         plugin: &str,
         report_id: &str,
         index: usize,
-        data: PluginData<'async_trait>,
-    ) -> FCallResult<()>;
+        data: PluginData<'a>,
+    ) -> impl Future<Output = FCallResult<()>> + Send;
 }

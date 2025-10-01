@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use redis::{self, cmd, AsyncCommands};
 use std::collections::{HashMap, HashSet};
 
@@ -15,15 +14,11 @@ const NODES_KEY: &str = "nodes";
 const PROC_NODES_KEY: &str = "proc_nodes";
 const DEFAULT_NETWORK_KEY: &str = "default_network";
 
-// Implementing the trait for redis::aio::MultiplexedConnection
-#[async_trait]
 impl NetdoxReader for redis::aio::MultiplexedConnection {
-    /// Gets the default network.
     async fn get_default_network(&mut self) -> FCallResult<String> {
         Ok(self.get(DEFAULT_NETWORK_KEY).await?)
     }
 
-    /// Qualifies a list of DNS names with the default network.
     async fn qualify_dns_names(&mut self, names: Vec<String>) -> FCallResult<Vec<String>> {
         Ok(cmd(QUALIFY_DNS_NAME_FN)
             .arg(names.len() as u32)
@@ -32,12 +27,10 @@ impl NetdoxReader for redis::aio::MultiplexedConnection {
             .await?)
     }
 
-    /// Get all DNS names that have been registered.
     async fn get_dns_names(&mut self) -> FCallResult<HashSet<String>> {
         Ok(self.smembers(DNS_KEY).await?)
     }
 
-    /// Get all nodes in the database.
     async fn get_nodes(&mut self) -> FCallResult<Vec<Node>> {
         let mut nodes = Vec::new();
         let link_ids: Vec<String> = self.smembers(PROC_NODES_KEY).await?;
@@ -47,7 +40,6 @@ impl NetdoxReader for redis::aio::MultiplexedConnection {
         Ok(nodes)
     }
 
-    /// Get a node by its link ID.
     async fn get_node(&mut self, link_id: &str) -> FCallResult<Node> {
         let name: String = self.get(format!("{PROC_NODES_KEY};{link_id}")).await?;
         let alt_names: HashSet<String> = self
@@ -73,7 +65,6 @@ impl NetdoxReader for redis::aio::MultiplexedConnection {
         })
     }
 
-    /// Get metadata for a DNS name.
     async fn get_dns_metadata(&mut self, name: &str) -> FCallResult<HashMap<String, String>> {
         let qualified_name = match self
             .qualify_dns_names(vec![name.to_string()])
@@ -94,7 +85,6 @@ impl NetdoxReader for redis::aio::MultiplexedConnection {
             .await?)
     }
 
-    /// Get metadata for a node.
     async fn get_node_metadata(&mut self, node: &Node) -> FCallResult<HashMap<String, String>> {
         let mut meta = HashMap::new();
         for raw_id in &node.raw_ids {
