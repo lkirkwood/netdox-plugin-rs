@@ -1,6 +1,6 @@
 [package]
 name = "netdox-plugin-rs"
-version = "0.2.0"
+version = "1.0.0"
 edition = "2021"
 description = "Collection of functions that are useful when writing a netdox plugin in Rust."
 authors = ["Linus Kirkwood <linuskirkwood@gmail.com>"]
