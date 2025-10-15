@@ -20,7 +20,8 @@ impl NetdoxReader for redis::aio::MultiplexedConnection {
     }
 
     async fn qualify_dns_names(&mut self, names: Vec<String>) -> FCallResult<Vec<String>> {
-        Ok(cmd(QUALIFY_DNS_NAME_FN)
+        Ok(cmd("FCALL")
+            .arg(QUALIFY_DNS_NAME_FN)
             .arg(names.len() as u32)
             .arg(&names)
             .query_async(self)
